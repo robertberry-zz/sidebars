@@ -1,0 +1,67 @@
+
+body {
+    background-color: #f0f0f0;
+}
+
+.Page {
+    display: flex;
+    left: 50%;
+    position: relative;
+    margin-left: -600px;
+    width: 1200px;
+}
+
+.Sidebar {
+    flex: 1;
+    min-width: 317px;
+}
+
+.Content {
+    flex: 2;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.Module {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    color: white;
+    font: 12px Arial, Verdana, sans-serif;
+    margin-bottom: 10px;
+    min-height: 300px;
+    padding: 10px;
+    /* must be set for when is fixed */
+    width: 295px;
+}
+
+.Module:last-of-type {
+    margin-bottom: 0;
+}
+
+.Timeline {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.Tweet {
+    border-bottom: 1px solid #ccc;
+    min-height: 200px;
+}
+
+.colour1 {
+    background-color: #C8BFC7;
+}
+
+.colour2 {
+    background-color: #7A9B76;
+}
+
+.colour3 {
+    background-color: #8A7E72;
+}
+
+.colour4 {
+    background-color: #5A2328;
+}
