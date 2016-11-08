@@ -11,10 +11,11 @@ function AnchoredSidebar($element) {
 
   // actually if there's enough room in viewport for entire sidebar it should be top anchored
   this.state = STATIC;
+  this.staticPosition = 0;
 }
 
 AnchoredSidebar.prototype.getTopAndBottom = function() {
-  var top = this.$element.offset().top;
+  var top = this.staticPosition;
   var bottom = top + this.$element.outerHeight();
 
   return {
@@ -44,13 +45,15 @@ AnchoredSidebar.prototype.updateDOM = function() {
     top = this.staticPosition;
   }
 
-  this.$element.css({
-    position: isStatic ? 'relative' : 'fixed',
-    bottom: this.state === BOTTOM_ANCHOR ? SIDEBAR_TOP_OFFSET : '',
-    top: top,
-    left: isStatic ? '' : '50%',
-    marginLeft: isStatic ? '' : CENTER_OFFSET
-  });
+  requestAnimationFrame(function() {
+    this.$element.css({
+      position: isStatic ? 'relative' : 'fixed',
+      bottom: this.state === BOTTOM_ANCHOR ? SIDEBAR_TOP_OFFSET : '',
+      top: top,
+      left: isStatic ? '' : '50%',
+      marginLeft: isStatic ? '' : CENTER_OFFSET
+    });
+  }.bind(this));
 };
 
 AnchoredSidebar.prototype.onScroll = function() {
