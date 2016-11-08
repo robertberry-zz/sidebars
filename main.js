@@ -35,17 +35,17 @@ AnchoredSidebar.prototype.getScrollTopAndBottom = function() {
 };
 
 AnchoredSidebar.prototype.updateDOM = function() {
-  var isStatic = this.state === STATIC;
-
-  var top = '';
-
-  if (this.state === TOP_ANCHOR) {
-    top = SIDEBAR_TOP_OFFSET;
-  } else if (this.state === STATIC && this.staticPosition) {
-    top = this.staticPosition;
-  }
-
   requestAnimationFrame(function() {
+    var isStatic = this.state === STATIC;
+
+    var top = '';
+
+    if (this.state === TOP_ANCHOR) {
+      top = SIDEBAR_TOP_OFFSET;
+    } else if (this.state === STATIC && this.staticPosition) {
+      top = this.staticPosition;
+    }
+
     this.$element.css({
       position: isStatic ? 'relative' : 'fixed',
       bottom: this.state === BOTTOM_ANCHOR ? SIDEBAR_TOP_OFFSET : '',
@@ -62,13 +62,13 @@ AnchoredSidebar.prototype.onScroll = function() {
 
   if (this.state === STATIC) {
     // offsets
-    if (scrollPosition.bottom > position.bottom + SIDEBAR_TOP_OFFSET) {
+    if (scrollPosition.bottom > position.bottom + 2 * SIDEBAR_TOP_OFFSET) {
       // anchor bottom
       console.log("Anchoring to bottom");
 
       this.state = BOTTOM_ANCHOR;
       this.updateDOM();
-    } else if (scrollPosition.top + SIDEBAR_TOP_OFFSET < position.top) {
+    } else if (scrollPosition.top < position.top) {
       // anchor to the top
       console.log("Anchoring to top");
 
@@ -91,7 +91,7 @@ AnchoredSidebar.prototype.onScroll = function() {
       // unanchor
       console.log("Unanchoring from bottom");
 
-      this.staticPosition = scrollPosition.bottom - this.$element.height() - SIDEBAR_TOP_OFFSET;
+      this.staticPosition = scrollPosition.bottom - this.$element.height() - 2 * SIDEBAR_TOP_OFFSET;
 
       this.state = STATIC;
       this.updateDOM();
