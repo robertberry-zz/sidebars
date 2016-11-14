@@ -25,7 +25,7 @@ AnchoredSidebar.prototype.getTopAndBottom = function() {
 };
 
 AnchoredSidebar.prototype.getScrollTopAndBottom = function() {
-  var top = $(document).scrollTop();
+  var top = Math.max(0, $(document).scrollTop());
   var bottom = top + $(window).height();
 
   return {
@@ -35,30 +35,34 @@ AnchoredSidebar.prototype.getScrollTopAndBottom = function() {
 };
 
 AnchoredSidebar.prototype.updateDOM = function() {
-  requestAnimationFrame(function() {
-    var isStatic = this.state === STATIC;
+  var isStatic = this.state === STATIC;
 
-    var top = '';
+  var top = '';
 
-    if (this.state === TOP_ANCHOR) {
-      top = SIDEBAR_TOP_OFFSET;
-    } else if (this.state === STATIC && this.staticPosition) {
-      top = this.staticPosition;
-    }
+  if (this.state === TOP_ANCHOR) {
+    top = SIDEBAR_TOP_OFFSET;
+  } else if (this.state === STATIC && this.staticPosition) {
+    top = this.staticPosition;
+  }
 
-    this.$element.css({
-      position: isStatic ? 'relative' : 'fixed',
-      bottom: this.state === BOTTOM_ANCHOR ? SIDEBAR_TOP_OFFSET : '',
-      top: top,
-      left: isStatic ? '' : '50%',
-      marginLeft: isStatic ? '' : this.centerOffset
-    });
-  }.bind(this));
+  this.$element.css({
+    position: isStatic ? 'relative' : 'fixed',
+    bottom: this.state === BOTTOM_ANCHOR ? SIDEBAR_TOP_OFFSET : '',
+    top: top,
+    left: isStatic ? '' : '50%',
+    marginLeft: isStatic ? '' : this.centerOffset
+  });
 };
 
 AnchoredSidebar.prototype.onScroll = function() {
-  var position = this.getTopAndBottom();
   var scrollPosition = this.getScrollTopAndBottom();
+
+  if (scrollPosition.top === this.lastScrollTop) {
+    this.enqueueRaf();
+    return;
+  }
+
+  var position = this.getTopAndBottom();
 
   if (this.state === STATIC) {
     // offsets
@@ -81,7 +85,7 @@ AnchoredSidebar.prototype.onScroll = function() {
       // unanchor
       console.log("Unanchoring from top");
 
-      this.staticPosition = scrollPosition.top - SIDEBAR_TOP_OFFSET;
+      this.staticPosition = scrollPosition.top; //- SIDEBAR_TOP_OFFSET;
 
       this.state = STATIC;
       this.updateDOM();
@@ -99,18 +103,21 @@ AnchoredSidebar.prototype.onScroll = function() {
   }
 
   this.lastScrollTop = scrollPosition.top;
+  this.enqueueRaf();
+};
+
+AnchoredSidebar.prototype.enqueueRaf = function() {
+  this.rafRef = requestAnimationFrame(this.boundOnScroll);
 };
 
 AnchoredSidebar.prototype.attach = function() {
   this.lastScrollTop = $(document).scrollTop();
-
   this.boundOnScroll = this.onScroll.bind(this);
-
-  $(document).on('scroll', this.boundOnScroll);
+  this.enqueueRaf();
 };
 
 AnchoredSidebar.prototype.unattach = function() {
-  $(document).off('scroll', this.boundOnScroll);
+  cancelAnimationFrame(this.rafRef);
 };
 
 new AnchoredSidebar($('.js-anchoredSidebar'), -600).attach();
