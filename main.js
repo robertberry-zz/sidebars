@@ -4,6 +4,10 @@ var TOP_ANCHOR = 1;
 var BOTTOM_ANCHOR = 2;
 
 var SIDEBAR_TOP_OFFSET = 8;
+var BOTTOM_OFFSET = 45;
+
+var $window = $(window);
+var $document = $(document);
 
 function AnchoredSidebar($element, centerOffset) {
   this.$element = $element;
@@ -13,26 +17,6 @@ function AnchoredSidebar($element, centerOffset) {
   this.staticPosition = 0;
   this.centerOffset = centerOffset;
 }
-
-AnchoredSidebar.prototype.getTopAndBottom = function() {
-  var top = this.staticPosition;
-  var bottom = top + this.$element.outerHeight();
-
-  return {
-    top: top,
-    bottom: bottom
-  };
-};
-
-AnchoredSidebar.prototype.getScrollTopAndBottom = function() {
-  var top = Math.max(0, $(document).scrollTop());
-  var bottom = top + $(window).height();
-
-  return {
-    top: top,
-    bottom: bottom
-  }
-};
 
 AnchoredSidebar.prototype.updateDOM = function() {
   var isStatic = this.state === STATIC;
@@ -45,64 +29,56 @@ AnchoredSidebar.prototype.updateDOM = function() {
     top = this.staticPosition;
   }
 
+  var transform = '';
+
+  if (this.state !== STATIC) {
+    transform = 'translateZ(0)';
+  }
+
   this.$element.css({
-    position: isStatic ? 'relative' : 'fixed',
-    bottom: this.state === BOTTOM_ANCHOR ? SIDEBAR_TOP_OFFSET : '',
+    position: isStatic ? 'absolute' : 'fixed',
+    bottom: this.state === BOTTOM_ANCHOR ? BOTTOM_OFFSET : '',
     top: top,
     left: isStatic ? '' : '50%',
-    marginLeft: isStatic ? '' : this.centerOffset
+    marginLeft: isStatic ? '' : this.centerOffset,
+    transform: transform
   });
 };
 
 AnchoredSidebar.prototype.onScroll = function() {
-  var scrollPosition = this.getScrollTopAndBottom();
+  var scrollTop = Math.max(0, $document.scrollTop());
 
-  if (scrollPosition.top === this.lastScrollTop) {
+  if (scrollTop === this.lastScrollTop) {
     this.enqueueRaf();
     return;
   }
 
-  var position = this.getTopAndBottom();
-
   if (this.state === STATIC) {
+    var top = this.staticPosition;
+
     // offsets
-    if (scrollPosition.bottom > position.bottom + 2 * SIDEBAR_TOP_OFFSET) {
-      // anchor bottom
-      console.log("Anchoring to bottom");
-
-      this.state = BOTTOM_ANCHOR;
-      this.updateDOM();
-    } else if (scrollPosition.top < position.top) {
-      // anchor to the top
-      console.log("Anchoring to top");
-
+    if (scrollTop < top) {
       this.state = TOP_ANCHOR;
       this.updateDOM();
+    } else if (scrollTop + $window.height() > top + this.$element.outerHeight() + SIDEBAR_TOP_OFFSET + BOTTOM_OFFSET) {
+      this.state = BOTTOM_ANCHOR;
+      this.updateDOM();
     }
-
   } else if (this.state === TOP_ANCHOR) {
-    if (scrollPosition.top > this.lastScrollTop) {
-      // unanchor
-      console.log("Unanchoring from top");
-
-      this.staticPosition = scrollPosition.top; //- SIDEBAR_TOP_OFFSET;
-
+    if (scrollTop > this.lastScrollTop) {
+      this.staticPosition = scrollTop; //- SIDEBAR_TOP_OFFSET;
       this.state = STATIC;
       this.updateDOM();
     }
   } else if (this.state == BOTTOM_ANCHOR) {
-    if (scrollPosition.top < this.lastScrollTop) {
-      // unanchor
-      console.log("Unanchoring from bottom");
-
-      this.staticPosition = scrollPosition.bottom - this.$element.height() - 2 * SIDEBAR_TOP_OFFSET;
-
+    if (scrollTop < this.lastScrollTop) {
+      this.staticPosition = scrollTop + $window.height() - this.$element.height() - SIDEBAR_TOP_OFFSET - BOTTOM_OFFSET;
       this.state = STATIC;
       this.updateDOM();
     }
   }
 
-  this.lastScrollTop = scrollPosition.top;
+  this.lastScrollTop = scrollTop;
   this.enqueueRaf();
 };
 
@@ -111,7 +87,7 @@ AnchoredSidebar.prototype.enqueueRaf = function() {
 };
 
 AnchoredSidebar.prototype.attach = function() {
-  this.lastScrollTop = $(document).scrollTop();
+  this.lastScrollTop = $document.scrollTop();
   this.boundOnScroll = this.onScroll.bind(this);
   this.enqueueRaf();
 };
@@ -121,4 +97,4 @@ AnchoredSidebar.prototype.unattach = function() {
 };
 
 new AnchoredSidebar($('.js-anchoredSidebar'), -600).attach();
-new AnchoredSidebar($('.js-anchoredSidebarRight'), 283).attach();
+//new AnchoredSidebar($('.js-anchoredSidebarRight'), 283).attach();
