@@ -4,7 +4,6 @@ body {
 }
 
 .Page {
-    display: flex;
     left: 50%;
     position: relative;
     margin-left: -600px;
@@ -12,14 +11,19 @@ body {
 }
 
 .Sidebar {
-    flex: 1;
+    float: left;
     min-width: 317px;
 }
 
+.Sidebar--right {
+    float: right;
+}
+
 .Content {
-    flex: 2;
     padding: 0 10px;
     box-sizing: border-box;
+    margin-left: 327px;
+    width: 544px;
 }
 
 .Module {
